@@ -58,7 +58,10 @@ class MongoStore(DataStore):
             if not query['time']:
                 query['time'] = {}
             query['time'].update({'$lte', endTime})
-        return list(self.db[collection].find(query).limit(limit).skip(skip))
+        def f(x):
+            x['_id'] = str(x['_id'])
+            return x
+        return list(map(f, self.db[collection].find(query).limit(limit).skip(skip)))
 
     
     def getMass(self, startTime, endTime, skip, limit):

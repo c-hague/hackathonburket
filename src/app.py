@@ -1,8 +1,8 @@
-from flask import json, request, jsonify
+from flask import request, jsonify, Flask
 from service.systemController import SystemController
 from store.mongoStore import MongoStore
 
-
+app = Flask(__name__)
 @app.route('/v1/mass', methods=['GET'])
 def getMass():
     store = MongoStore.getInstance()
@@ -94,21 +94,23 @@ def getTotal():
     return jsonify(items)
 
 
-@app.route('v1/openvalve', methods=['POST'])
-def postValve():
+@app.route('/v1/openvalve', methods=['POST'])
+def postOpenValve():
     controller = SystemController.getInstance()
     controller.openValve()
     return '', 201
 
-@app.route('v1/openvalve', methods=['POST'])
-def postValve():
+@app.route('/v1/openvalve', methods=['POST'])
+def postCloseValve():
     controller = SystemController.getInstance()
     controller.closeValve()
     return '', 201
 
-@app.route('v1/resetvolume', methods=['POST'])
-def postValve():
+@app.route('/v1/resetvolume', methods=['POST'])
+def postResetVolume():
     controller = SystemController.getInstance()
     controller.resetVolume()
     return '', 201
 
+if __name__ == '__main__':
+    app.run(host='127.0.0.1', port=5000)
