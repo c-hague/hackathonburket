@@ -41,21 +41,17 @@ class DataStore(object):
     def getTime(self, startTime, endTime, skip, limit):
         return []
 
-class InMemoryStore(DataStore):
-    def __init__(self):
-        self.states = []
-        self.volumes = []
-        self.masses = []
-        self.times = []
+    def getFloFlow(self, startTime, endTime, skip, limit):
+        return []
     
-    def addState(self, state):
-        self.states.append(state)
+    def getVelocity(Self, startTime, endTime, skip, limit):
+        return []
     
-    def addVolume(self, volume):
-        self.volumes.append(volume)
+    def getWeight(self, startTime, endTime, skip, limit):
+        return []
     
-    def addMass(self, mass):
-        self.masses.append(mass)
+    def getFlow(self, startTime, endTime, skip, limit):
+        return []
     
-    def addTime(self, time):
-        self.times.append(time)
+    def getTotal(self, startTime, endTime, skip, limit):
+        return []

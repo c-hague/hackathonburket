@@ -62,14 +62,28 @@ class MongoStore(DataStore):
 
     
     def getMass(self, startTime, endTime, skip, limit):
-        self._getItem(startTime, endTime, skip, limit, config.MASS_COL)
+        return self._getItem(startTime, endTime, skip, limit, config.MASS_COL)
 
     def getVolume(self, startTime, endTime, skip, limit):
-        self._getItem(startTime, endTime, skip, limit, config.VOLUME_COL)
+        return self._getItem(startTime, endTime, skip, limit, config.VOLUME_COL)
 
     def getTime(self, startTime, endTime, skip, limit):
-        self._getItem(startTime, endTime, skip, limit, config.TIME_COL)
+        return self._getItem(startTime, endTime, skip, limit, config.TIME_COL)
 
     def getState(self, startTime, endTime, skip, limit):
-        self._getItem(startTime, endTime, skip, limit, config.STATE_COL)
+        return self._getItem(startTime, endTime, skip, limit, config.STATE_COL)
     
+    def getFloFlow(self, startTime, endTime, skip, limit):
+        return self._getItem(startTime, endTime, skip, limit, config.FLO_FLOW_COL)
+    
+    def getVelocity(self, startTime, endTime, skip, limit):
+        return self._getItem(startTime, endTime, skip, limit, config.VELOCITY_COL)
+    
+    def getWeight(self, startTime, endTime, skip, limit):
+        return self._getItem(startTime, endTime, skip, limit, config.WEIGHT_COL)
+    
+    def getFlow(self, startTime, endTime, skip, limit):
+        return self._getItem(startTime, endTime, skip, limit, config.FLOW_COL)
+    
+    def getTotal(self, startTime, endTime, skip, limit):
+        return self._getItem(startTime, endTime, skip, limit, config.TOTAL_COL)

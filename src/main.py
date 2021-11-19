@@ -1,26 +1,12 @@
 import config
 import time
-
-from paho.mqtt import client as mqtt_client
-
 from store.mongoStore import MongoStore
-def getClient() -> mqtt_client:
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print("Connected to MQTT Broker!")
-        else:
-            print("Failed to connect, return code %d\n", rc)
-
-    client = mqtt_client.Client(config.CLIENT_ID)
-    client.on_connect = on_connect
-    client.connect(config.BROKER, config.PORT)
-    return client
-
+from service.mqttConnection import MQTTConnection
 
     
 
 def main():
-    client = getClient()
+    client = MQTTConnection.getInstance()
     store = MongoStore.getInstance()
     def onMessgae(client, userdata, msg):
         if msg.topic == config.SUB_MASS:
