@@ -14,6 +14,21 @@ class DataStore(object):
     def addTime(self, time):
         pass
 
+    def addFloFlow(self, flow):
+        pass
+
+    def addVelocity(self, velocity):
+        pass
+
+    def addWeight(self, weight):
+        pass
+
+    def addFlow(self, flow):
+        pass
+
+    def addTotal(Self, total):
+        pass
+
     def getMass(self, startTime, endTime, skip, limit):
         return []
     

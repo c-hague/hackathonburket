@@ -56,6 +56,51 @@ def main():
                 })
             except ValueError:
                 pass
+        elif msg.topic == config.SUB_FLO_FLOW:
+            try:
+                store.addFloFlow({
+                    'flow': float(msg.payload.decode()),
+                    'time': time.time(),
+                    'topic': config.SUB_FLO_FLOW
+                })
+            except ValueError:
+                pass
+        elif msg.topic == config.SUB_VELOCITY:
+            try:
+                store.addVelocity({
+                    'velocity': float(msg.payload.decode()),
+                    'time': time.time(),
+                    'topic': config.SUB_VELOCITY
+                })
+            except ValueError:
+                pass
+        elif msg.topic == config.SUB_WEIGHT:
+            try:
+                store.addWeight({
+                    'weight': float(msg.payload.decode()),
+                    'time': time.time(),
+                    'topic': config.SUB_WEIGHT
+                })
+            except ValueError:
+                pass
+        elif msg.topic == config.SUB_FLOW:
+            try:
+                store.addFlow({
+                    'flow': float(msg.payload.decode()),
+                    'time': time.time(),
+                    'topic': config.SUB_FLOW
+                })
+            except ValueError:
+                pass
+        elif msg.topic == config.SUB_TOTAL:
+            try:
+                store.addTotal({
+                    'total': float(msg.payload.decode()),
+                    'time': time.time(),
+                    'topic': config.SUB_TOTAL
+                })
+            except ValueError:
+                pass
     client.subscribe('#')
     client.on_message = onMessgae
     client.loop_forever()

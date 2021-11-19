@@ -34,43 +34,42 @@ class MongoStore(DataStore):
     
     def addTime(self, time):
         self.db[config.TIME_COL].insert_one(time)
+
+    def addFloFlow(self, flow):
+        self.db[config.FLO_FLOW_COL].insert_one(flow)
+    
+    def addVelocity(self, velocity):
+        self.db[config.VELOCITY_COL].insert_one(velocity)
+    
+    def addWeight(self, weight):
+        self.db[config.WEIGHT_COL].insert_one(weight)
+    
+    def addFlow(self, flow):
+        self.db[config.FLOW_COL].insert_one(flow)
+    
+    def addTotal(self, total):
+        self.db[config.TOTAL_COL].insert_one(total)
+    
+    def _getItem(self, startTime, endTime, skip, limit, collection):
+        query = {}
+        if startTime:
+            query['time'] = {'$gte', startTime}
+        if endTime:
+            if not query['time']:
+                query['time'] = {}
+            query['time'].update({'$lte', endTime})
+        return list(self.db[collection].find(query).limit(limit).skip(skip))
+
     
     def getMass(self, startTime, endTime, skip, limit):
-        query = {}
-        if startTime:
-            query['time'] = {'$gte', startTime}
-        if endTime:
-            if not query['time']:
-                query['time'] = {}
-            query['time'].update({'$lte', endTime})
-        return list(self.db[config.MASS_COL].find(query).limit(limit).skip(skip))
+        self._getItem(startTime, endTime, skip, limit, config.MASS_COL)
 
     def getVolume(self, startTime, endTime, skip, limit):
-        query = {}
-        if startTime:
-            query['time'] = {'$gte', startTime}
-        if endTime:
-            if not query['time']:
-                query['time'] = {}
-            query['time'].update({'$lte', endTime})
-        return list(self.db[config.VOLUME_COL].find(query).limit(limit).skip(skip))
+        self._getItem(startTime, endTime, skip, limit, config.VOLUME_COL)
 
-    def getMass(self, startTime, endTime, skip, limit):
-        query = {}
-        if startTime:
-            query['time'] = {'$gte', startTime}
-        if endTime:
-            if not query['time']:
-                query['time'] = {}
-            query['time'].update({'$lte', endTime})
-        return list(self.db[config.STATE_COL].find(query).limit(limit).skip(skip))
+    def getTime(self, startTime, endTime, skip, limit):
+        self._getItem(startTime, endTime, skip, limit, config.TIME_COL)
 
-    def getMass(self, startTime, endTime, skip, limit):
-        query = {}
-        if startTime:
-            query['time'] = {'$gte', startTime}
-        if endTime:
-            if not query['time']:
-                query['time'] = {}
-            query['time'].update({'$lte', endTime})
-        return list(self.db[config.TIME_COL].find(query).limit(limit).skip(skip))
+    def getState(self, startTime, endTime, skip, limit):
+        self._getItem(startTime, endTime, skip, limit, config.STATE_COL)
+    
