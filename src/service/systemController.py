@@ -26,14 +26,14 @@ class SystemController(object):
 
     def openValve(self):
         if not self.lastValveState:
-            result = self.client.publish(config.PUB_VALVE, 'open')
+            result = self.client.publish(config.PUB_VALVE, 'Open')
             if result[0] != 0:
                 raise ValveOpenException(f'Valve Open Error {result[0]}')
             self.lastValveState = True
     
     def closeValve(self):
         if self.lastValveState:
-            result = self.client.publish(config.PUB_VALVE, 'close')
+            result = self.client.publish(config.PUB_VALVE, 'Close')
             if result[0] != 0:
                 raise ValveCloseException(f'Valve Close Error {result[0]}')
             self.lastValveState = False

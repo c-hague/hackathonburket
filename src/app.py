@@ -100,7 +100,7 @@ def postOpenValve():
     controller.openValve()
     return '', 201
 
-@app.route('/v1/openvalve', methods=['POST'])
+@app.route('/v1/closevalve', methods=['POST'])
 def postCloseValve():
     controller = SystemController.getInstance()
     controller.closeValve()
