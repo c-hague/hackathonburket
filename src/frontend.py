@@ -54,6 +54,7 @@ def file_selector(folder_path='.'):
     selected_filename = st.sidebar.selectbox('Select a file', filenames)
     return os.path.join(folder_path, selected_filename)
 
+#checks to make sure the profile is valid
 def checkdatasave(x,y,totaltime, maxflow):
     x = np.array(x)
     y = np.array(y)
@@ -173,35 +174,48 @@ def sendemailstart(sendto):
 
 
 
-
+#for the dual axis plotting
 def time_percent(x):
     return x
 def time_seconds(x):
     return x*total_time/100
 
+
+#set some header stuff
 st.header('Burket Hackathon: Team UNCC')
 st.sidebar.header('Flow Scheduler')
 
-
+#init some variables
 max_flow = 10
 total_time = 0
 
+
+#init the buttons
 ct_bttn = False
 ld_bttn = False
 
 
 #create job
 if (ld_bttn != True):
+    #if the load button hasn't been pressed then show the create button
     ct_bttn = st.sidebar.checkbox('Create Job')
 
     if ct_bttn:
+        #init the plot
         fig, ax = plt.subplots()
         total_time = st.sidebar.number_input('Target Time (seconds)')
 
+        #start the dual columns for data entry
         col1, col2 = st.sidebar.columns(2)
+
+        #make two arrays the store the data
         time_percentage = []
         fill_volume = []
-        n = st.sidebar.number_input('Job Sequences',1)
+
+        #see how many points the user wants to use
+        n = st.sidebar.number_input('Job Sequences',2)
+
+        #iterate through making the input boxes
         for i in range(int(n)):
 
             if i == n-1 and i != 0:
@@ -214,11 +228,13 @@ if (ld_bttn != True):
                 x = col1.number_input('% Time' + str(i),min_value=time_percentage[i-1])
                 y = col2.number_input('Volume ml' + str(i),min_value=fill_volume[i-1])
 
+            #add the values to the storage array
             time_percentage.append(x)
             fill_volume.append(y)
 
-
+        #check to see if the user has previewed the job
         if st.sidebar.button('Preview Job'):
+            #plot some stuff
             ax.plot(time_percentage,fill_volume)
             ax.scatter(time_percentage, fill_volume)
             secax = ax.secondary_xaxis('top', functions=(time_seconds, time_percent))
@@ -227,12 +243,17 @@ if (ld_bttn != True):
             ax.set_ylabel('Volume ml')
             st.pyplot(fig)
 
-        filename = st.sidebar.text_input("Enter Filename for your job", 'flow_job.flow')
+        #make an enetry box for the user to save the profile into a csv
+        filename_save = st.sidebar.text_input("Enter Filename for your job", 'flow_job.flow')
         if st.sidebar.button('Save Job'):
+            #feed the data into a checking function for simple profile errors
             [job_data,error_save, error_savetype] = checkdatasave(time_percentage,fill_volume,total_time,max_flow)
+            #job_data = dict with organized profile data
+            #error_save = trigger if there was an error in the file
+            #error_savetype = error message on where the error is
             if error_save == False:
                 st.sidebar.write('Flow Profile Saved')
-                write_save(filename,job_data)
+                write_save(filename_save,job_data)
             else:
                 st.sidebar.write("Error in data cannot save due to invalid profile.")
                 st.sidebar.write(error_savetype)
@@ -251,11 +272,11 @@ if (ct_bttn != True):
         fileloadname = file_selector()
         if st.sidebar.button('Load file function here'):
             
-            imp = read_save(fileloadname)
+            imp = read_save(fileloadname) # load the data
 
             tot_time = imp['total time (sec)']
 
-            [x_in,y_in] = cleanimport(imp)
+            [x_in,y_in] = cleanimport(imp) #basic clean
 
             #add the columns and time
             total_time = st.sidebar.number_input('Target Time (seconds)',value=float(tot_time))
@@ -273,10 +294,16 @@ if (ct_bttn != True):
                 else:
                     x = col1.number_input('% Time' + str(i),value=x_in[i])
                     y = col2.number_input('Volume ml' + str(i),value=y_in[i])
+
+                #load the data into arrays for use
                 time_percentage.append(x)
                 fill_volume.append(y)
-#checks if the data is valid
+
+            #feed the data into a checking function for simple profile errors
             [job_data,error_save, error_savetype] = checkdatasave(time_percentage,fill_volume,total_time,max_flow)
+            #job_data = dict with organized profile data
+            #error_save = trigger if there was an error in the file
+            #error_savetype = error message on where the error is
             if error_save == False:
                 st.sidebar.write('No Errors in Profile')
             else:
@@ -294,21 +321,22 @@ if (ct_bttn != True):
 
 #send email
 email_bttn = st.sidebar.checkbox("Send Email When Finished")
+
 if email_bttn:
     email_recp = st.sidebar.text_input("Enter Email for Notificaiton when Finished")
 
-    send_bttn = st.sidebar.button('press me')
+    #if send_bttn:
+       # sendemailstart(email_recp)
 
-    if send_bttn:
-        sendemailstart(email_recp)
 
-calibrate_button = st.button('Auto Calibrate')
+calibrate_button = st.sidebar.button('Auto Calibrate')
 if calibrate_button:
     requests.post('http://localhost:5000/v1/calibrate')
 
-run_button = st.button('Run Job')
-if run_button:           
-    for volume in fill_volume:
-        response = requests.post('http://localhost:5000/v1/dose?amount={0}'.format(volume))
-        if not response.ok:
-            st.sidebar.write('Error Communicating')
+if ct_bttn == True or ld_bttn == True:
+    run_button = st.sidebar.button('Run Job')
+    if run_button:           
+        for volume in fill_volume:
+            response = requests.post('http://localhost:5000/v1/dose?amount={0}'.format(volume))
+            if not response.ok:
+                st.sidebar.write('Error Communicating')
