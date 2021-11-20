@@ -293,7 +293,7 @@ if (ct_bttn != True):
 email_bttn = st.sidebar.checkbox("Send Email When Finished")
 
 if email_bttn:
-    email_recp = st.sidebar.text_input("Enter Email for Notificaiton when Finished")
+    email_recp = st.sidebar.text_input("Enter Email for Notificaiton when Finished","hackerthonburket@gmail.com")
 
     #if send_bttn:
        # sendemailstart(email_recp)
