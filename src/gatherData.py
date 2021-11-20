@@ -6,24 +6,29 @@ from store.mongoStore import MongoStore
 
 def main():
     start = time.time() - 10
-    n = 30
+    n = 10
     minT = 5
     maxT = 10
     controller = SystemController.getInstance()
     store = MongoStore.getInstance()
-    t = 1
+    controller.resetVolume()
+    t = 30
     for i in range(n):
-        time.sleep(1)
         if not controller.getIsReady():
+            print('paused!')
             time.sleep(1)
         print('opening valve for', t, 'seconds')
         controller.openValve()
         time.sleep(t)
         controller.closeValve()
-    end = time.time() + 10
+        time.sleep(10)
+        controller.resetVolume()
+        end = time.time() 
+        writeFile(store, start, end, '30s_{0}'.format(i))
     time.sleep(10)
 
-    with open('data.json', 'w') as f:
+def writeFile(store, start, end, fname):
+    with open(fname, 'w') as f:
         mass = store.getMass(start, end, 0, 256)
         volume = store.getVolume(start, end, 0, 256)
         dataTime = store.getTime(start, end, 0 ,256)
