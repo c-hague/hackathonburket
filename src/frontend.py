@@ -109,14 +109,12 @@ def checkdatasave(x,y,totaltime, maxflow):
 
 
 #email notifications
-def sendemailfinish(sendto):
+def sendemail(sendto,subject,body):
     gmail_user = 'hackerthonburket@gmail.com'
     gmail_password = 'hackhack'
 
     sent_from = gmail_user
     to = sendto
-    subject = 'Filling Finished'
-    body = "'The filling cycle has finished'"
 
     email_text = """\
     From: %s
@@ -140,39 +138,6 @@ def sendemailfinish(sendto):
 
         st.sidebar.write('Something went wrong...')
 
-def sendemailstart(sendto):
-    sendto = sendto.replace(" ","")
-    gmail_user = 'hackerthonburket@gmail.com'
-    gmail_password = 'hackhack'
-
-    sent_from = gmail_user
-    to = [sendto]
-    subject = 'Filling Started'
-    body = "The filling cycle started at " + str(datetime.today()) 
-
-
-
-    email_text = """\
-    From: %s
-    To: %s
-    Subject: %s
-
-    %s
-    """ % (sent_from, ", ".join(to), subject, body)
-
-    try:
-        server = smtplib.SMTP_SSL('smtp.gmail.com', 465)
-        server.ehlo()
-        server.login(gmail_user, gmail_password)
-        server.sendmail(sent_from, to, email_text)
-        server.close()
-        
-        st.sidebar.write('Email sent!')
-
-    except:
-        st.sidebar.write('Something went wrong...')
-
-
 
 #for the dual axis plotting
 def time_percent(x):
@@ -189,10 +154,15 @@ st.sidebar.header('Flow Scheduler')
 max_flow = 10
 total_time = 0
 
+#init the flow constants
+constants = {}
+
 
 #init the buttons
 ct_bttn = False
 ld_bttn = False
+
+
 
 
 #create job
@@ -332,21 +302,34 @@ if email_bttn:
 calibrate_button = st.sidebar.button('Auto Calibrate')
 if calibrate_button:
     try:
+        if email_bttn:
+            sendemail(email_recp,"calibration started","The calibration started at " + str(date.today()) )
         response = requests.post('http://localhost:5000/v1/calibrate')
         constants = response.json()
         print('a', constants['a'], 'b', constants['b'])
+        if email_bttn:
+            sendemail(email_recp,"calibration Ended","The calibration ended at " + str(date.today()) )
     except:
         st.sidebar('Error Communicating')
 
-if ct_bttn == True or ld_bttn == True:
-    run_button = st.sidebar.button('Run Job')
-    if run_button:           
-        for volume in fill_volume:
-            try:
-                response = requests.post('http://localhost:5000/v1/dose?amount={0}'.format(volume))
-                if not response.ok:
+#check to see if the calibration has been loaded
+if bool(constants) == True:
+    run_button = st.button('Run Job')
+    #check to see if a job has been loaded
+    if ct_bttn == True or ld_bttn == True:
+        run_button = st.sidebar.button('Run Job')
+        
+        if run_button:           
+            for volume in fill_volume:
+                try:
+                    if email_bttn:
+                        sendemail(email_recp,"Job Started","The job started at " + str(date.today()) )
+                    response = requests.post('http://localhost:5000/v1/dose?amount={0}'.format(volume))
+                    if not response.ok:
+                        st.sidebar.write('Error Communicating')
+                    actual = response.json()
+                    print(actual['amount'])
+                    if email_bttn:
+                        sendemail(email_recp,"Job Ended","The job ended at " + str(date.today()) )
+                except:
                     st.sidebar.write('Error Communicating')
-                actual = response.json()
-                print(actual['amount'])
-            except:
-                st.sidebar.write('Error Communicating')
