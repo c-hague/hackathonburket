@@ -12,6 +12,8 @@ class Calibrate_System:
         self.max_per_diff = 100
         self.start_time = 10
         self.clip_mass = 3500
+        self.a_cal = 190
+        self.b_cal = 0
         self.store = MongoStore.getInstance()
 
     def compile_data(self, times):
@@ -70,6 +72,7 @@ class Calibrate_System:
             b_cal.append(b)
         self.a_cal = np.mean(a_cal)
         self.b_cal = np.mean(b_cal)
+        return { 'a': self.a_cal, 'b': self.b_cal }
 
     def predict(self,delta_mass):
         delta_t = (delta_mass - self.b_cal)/self.a_cal

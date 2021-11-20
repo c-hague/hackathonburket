@@ -119,13 +119,12 @@ def postDose():
         amount = float(request.args.get('amount', 0))
     except ValueError:
         abort(400)
-    return controller.dose(amount), 201
+    return {'amount': controller.dose(amount)}, 201
 
 @app.route('/v1/calibrate', methods=['POST'])
 def postCalibrate():
     controller = SystemController.getInstance()
-    controller.calibrateSystem()
-    return '', 201
+    return controller.calibrateSystem(), 201
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=5000)

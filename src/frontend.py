@@ -304,11 +304,19 @@ if email_bttn:
 
 calibrate_button = st.button('Auto Calibrate')
 if calibrate_button:
-    requests.post('http://localhost:5000/v1/calibrate')
+    try:
+        requests.post('http://localhost:5000/v1/calibrate')
+    except:
+        st.sidebar('Error Communicating')
 
 run_button = st.button('Run Job')
 if run_button:           
     for volume in fill_volume:
-        response = requests.post('http://localhost:5000/v1/dose?amount={0}'.format(volume))
-        if not response.ok:
+        try:
+            response = requests.post('http://localhost:5000/v1/dose?amount={0}'.format(volume))
+            if not response.ok:
+                st.sidebar.write('Error Communicating')
+            actual = response.json()
+            print(actual['amount'])
+        except:
             st.sidebar.write('Error Communicating')

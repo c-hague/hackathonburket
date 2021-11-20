@@ -88,7 +88,7 @@ class SystemController(object):
     
     def calibrateSystem(self):
         times = []
-        for i in range(10):
+        for i in range(5):
             self.closeValve()
             self.resetVolume()
             time.sleep(1)
@@ -103,6 +103,8 @@ class SystemController(object):
             time.sleep(2)
             times.append([start, end])
         self.calibrate.compile_data(times)
+        return self.calibrate.calibrate_constants()
+        
 
 
     def _waitRefilling(self):
@@ -131,5 +133,5 @@ class SystemController(object):
         self._waitRefilling()
         time.sleep(1)
         m1 = self.store.getLastFromCollection(config.MASS_COL)
-        return m1 - m0
+        return m1[0]['mass'] - m0[0]['mass']
 
