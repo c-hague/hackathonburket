@@ -10,6 +10,7 @@ def main():
     n = 10
     minT = 5
     maxT = 10
+    reFillTime = 35
     controller = SystemController.getInstance()
     store = MongoStore.getInstance()
     controller.resetVolume()
@@ -19,11 +20,11 @@ def main():
             print('paused!')
             time.sleep(1)
         controller.resetVolume()
-        waitRefilling(controller, 30)
+        waitRefilling(controller, reFillTime)
         print('opening valve for', t, 'seconds')
         controller.openValve()
         for j in np.linspace(0, t, 10):
-            waitRefilling(controller, 30)
+            waitRefilling(controller, reFillTime)
             time.sleep(t / 10)
         controller.closeValve()
         time.sleep(10)
@@ -43,17 +44,18 @@ def waitRefilling(controller, dt):
     if closed:
         controller.openValve()
 
-def writeFile(store, start, end, fname):
+def writeFile(store, start, end, fname, dataLimit=2048):
+    dataLimit = 2048
     with open(fname, 'w') as f:
-        mass = store.getMass(start, end, 0, 256)
-        volume = store.getVolume(start, end, 0, 256)
-        dataTime = store.getTime(start, end, 0 ,256)
-        floFlow = store.getFloFlow(start, end, 0, 256)
-        velocity = store.getVelocity(start, end, 0, 256)
-        weight = store.getWeight(start, end, 0, 256)
-        flow = store.getFlow(start, end, 0, 256)
-        total = store.getTotal(start, end, 0, 256)
-        state = store.getState(start, end, 0, 256)
+        mass = store.getMass(start, end, 0, dataLimit)
+        volume = store.getVolume(start, end, 0, dataLimit)
+        dataTime = store.getTime(start, end, 0 ,dataLimit)
+        floFlow = store.getFloFlow(start, end, 0, dataLimit)
+        velocity = store.getVelocity(start, end, 0, dataLimit)
+        weight = store.getWeight(start, end, 0, dataLimit)
+        flow = store.getFlow(start, end, 0, dataLimit)
+        total = store.getTotal(start, end, 0, dataLimit)
+        state = store.getState(start, end, 0, dataLimit)
         l = mass + volume + dataTime + floFlow + velocity + weight + flow + total + state
         json.dump(l, f)
     
