@@ -67,11 +67,11 @@ class MongoStore(DataStore):
             return x
         return list(map(f, self.db[collection].find(query).limit(limit).skip(skip)))
 
-    def getLastFromCollection(self, collection):
+    def getLastFromCollection(self, collection, limit=1):
         def f(x):
             x['_id'] = str(x['_id'])
             return x
-        return list(map(f, self.db[collection].find().limit(1).sort('time', -1)))
+        return list(map(f, self.db[collection].find().limit(limit).sort('time', -1)))
     
     def getLastNonMaxFillState(self):
         def f(x):

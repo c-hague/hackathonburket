@@ -2,6 +2,7 @@ import config
 from service.mqttConnection import MQTTConnection
 from store.mongoStore import MongoStore
 import time
+import numpy as np
 
 class ValveOpenException(Exception):
     pass
@@ -37,13 +38,18 @@ class SystemController(object):
         lastState = self.store.getLastFromCollection(config.STATE_COL)
         if len(lastState) <= 0:
             return False
-        return lastState[0]['state'] == 'Max reached' or lastState[0]['state'] == 'Refilling'
+        lastTank = self.store.getLastFromCollection(config.MASS_COL, limit=2)
+        if len(lastTank) <= 1:
+            return None
+        return lastState[0]['state'] == 'Max reached' or lastState[0]['state'] == 'Refilling' or lastTank[0]['mass'] - lastTank[1]['mass'] < 0 or lastTank[0]['mass'] > 5000
     
     def getIsTankMin(self):
-        lastTank = self.store.getLastFromCollection(config.MASS_COL)
-        if len(lastTank) <= 0:
+        lastTank = self.store.getLastFromCollection(config.MASS_COL, limit=10)
+        if len(lastTank) <= 10:
             return None
-        return lastTank[0]['mass'] < 20
+        masses = np.array(map(lambda x: x['mass']), lastTank)
+        slopes: np.ndarray = masses[:-1] - masses[1:]
+        return lastTank[0]['mass'] < 20 or slopes.mean() >= 0
 
     def openValve(self):
         result = self.client.publish(config.PUB_VALVE, 'Open')
