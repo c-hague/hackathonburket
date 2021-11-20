@@ -51,6 +51,9 @@ class MongoStore(DataStore):
     def addTotal(self, total):
         self.db[config.TOTAL_COL].insert_one(total)
     
+    def addCommand(self, command):
+        self.db[config.COMMAND_COL].insert_one(command)
+    
     def _getItem(self, startTime, endTime, skip, limit, collection):
         query = {}
         if startTime:
