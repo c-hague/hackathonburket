@@ -1,3 +1,4 @@
 hackathon/
 __pycache__/
 .vscode/
+tmp/
