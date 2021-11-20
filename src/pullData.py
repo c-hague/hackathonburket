@@ -20,7 +20,7 @@ def writeFile(store, start, end, fname, dataLimit):
 
 def main():
     store = MongoStore.getInstance()
-    lastCommands = list(store.db[config.COMMAND_COL].find().sort('time', -1).limit(50))
+    lastCommands = list(store.db[config.COMMAND_COL].find().sort('time', -1).limit(100))
     commandPairs = []
     state = 0
     currentPair = []
@@ -39,7 +39,7 @@ def main():
                 currentPair[0] = i
     pprint.pprint(commandPairs)
     for pair in commandPairs:
-        writeFile(store,lastCommands[pair[1]]['time'], lastCommands[pair[0]]['time'], 'trial_{0}_{1}.json'.format(pair[0], pair[1]), int(1e6))
+        writeFile(store,lastCommands[pair[1]]['time'], lastCommands[pair[0]]['time'], 'tmp/trial_{0}_{1}.json'.format(pair[0], pair[1]), int(1e6))
 
 
 if __name__ == '__main__':

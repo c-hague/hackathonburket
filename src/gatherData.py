@@ -6,41 +6,39 @@ from service.systemController import SystemController
 from store.mongoStore import MongoStore
 
 def main():
-    start = time.time() - 10
     n = 10
-    minT = 5
-    maxT = 10
     reFillTime = 35
     controller = SystemController.getInstance()
-    store = MongoStore.getInstance()
+    controller.closeValve()
     controller.resetVolume()
-    t = 30
     for i in range(n):
-        if not controller.getIsReady():
+        t = random.random() * 10
+        waitRefilling(controller)
+        while not controller.getIsReady():
             print('paused!')
             time.sleep(1)
         controller.resetVolume()
-        waitRefilling(controller, reFillTime)
         print('opening valve for', t, 'seconds')
         controller.openValve()
         for j in np.linspace(0, t, 10):
-            waitRefilling(controller, reFillTime)
+            waitRefilling(controller)
             time.sleep(t / 10)
         controller.closeValve()
         time.sleep(10)
-        end = time.time() 
-        writeFile(store, start, end, '30s_{0}.json'.format(i))
-    time.sleep(10)
 
-def waitRefilling(controller, dt):
+
+def waitRefilling(controller: SystemController):
     closed = False
+    i = 0
     if controller.getIsFull():
         controller.closeValve()
         closed = True
         print('refilling!')
-        time.sleep(dt)
+        while not controller.getIsTankMin():
+            time.sleep(1)
+            i += 1
         controller.closeValve()
-        dt += dt if dt < 5 else 0
+        print('refilling took', i, 'seconds')
     if closed:
         controller.openValve()
 

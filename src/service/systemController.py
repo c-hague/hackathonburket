@@ -28,16 +28,22 @@ class SystemController(object):
         self.store = MongoStore.getInstance()
     
     def getIsReady(self):
-        lastState = self.store.getLastState()
+        lastState = self.store.getLastNonMaxFillState()
         if len(lastState) <= 0:
             return False
         return lastState[0]['state'] == 'Ready'            
 
     def getIsFull(self):
-        lastState = self.store.getLastState()
+        lastState = self.store.getLastFromCollection(config.STATE_COL)
         if len(lastState) <= 0:
             return False
-        return lastState[0]['state'] == 'Max reached'
+        return lastState[0]['state'] == 'Max reached' or lastState[0]['state'] == 'Refilling'
+    
+    def getIsTankMin(self):
+        lastTank = self.store.getLastFromCollection(config.MASS_COL)
+        if len(lastTank) <= 0:
+            return None
+        return lastTank[0]['mass'] < 20
 
     def openValve(self):
         result = self.client.publish(config.PUB_VALVE, 'Open')
