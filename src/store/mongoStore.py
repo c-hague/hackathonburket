@@ -51,6 +51,9 @@ class MongoStore(DataStore):
     def addTotal(self, total):
         self.db[config.TOTAL_COL].insert_one(total)
     
+    def addCommand(self, command):
+        self.db[config.COMMAND_COL].insert_one(command)
+    
     def _getItem(self, startTime, endTime, skip, limit, collection):
         query = {}
         if startTime:
@@ -64,11 +67,18 @@ class MongoStore(DataStore):
             return x
         return list(map(f, self.db[collection].find(query).limit(limit).skip(skip)))
 
-    def getLastState(self):
+    def getLastFromCollection(self, collection):
         def f(x):
             x['_id'] = str(x['_id'])
             return x
-        return list(map(f, self.db[config.STATE_COL].find().limit(1).sort('time', -1)))
+        return list(map(f, self.db[collection].find().limit(1).sort('time', -1)))
+    
+    def getLastNonMaxFillState(self):
+        def f(x):
+            x['_id'] = str(x['_id'])
+            return x
+        return list(map(f, self.db[config.STATE_COL].find({'state': {'$ne': 'Max reached'}}).limit(1).sort('time', -1)))
+
 
     def getMass(self, startTime, endTime, skip, limit):
         return self._getItem(startTime, endTime, skip, limit, config.MASS_COL)

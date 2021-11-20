@@ -1,30 +1,27 @@
 import json
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib
+import config
+import os
 
-matplotlib.use('TkAgg')
+files = os.listdir('tmp/')
 
-with open('src/data.json') as f:
-    data = json.load(f)
+for file in files:
+    if not file.startswith('trial'):
+        continue
 
-newData = []
-for row in data:
-    found = False
-    for otherRow in newData:
-        if abs(row['time'] - otherRow['time']) < .05:
-            otherRow.update(row)
-            found = True
-            break
-    if not found:
-        newData.append(row)
+    with open('tmp/' + file) as f:
+        data = json.load(f)
 
-df = pd.DataFrame(newData)
-del df['topic']
-
-df.to_csv('data.csv')
-
-plt.plot(df['time'], df['flow'])
-plt.figure()
-plt.plot(df['time'], df['mass'])
-plt.show()
+        topics = {}
+        for item in data:
+            if item['topic'] not in topics.keys():
+                topics[item['topic']] = []
+            topics[item['topic']].append(item)
+        volume = pd.DataFrame(topics[config.SUB_VOLUME])
+        plt.plot(volume['time'] - volume['time'].min(), volume['volume'])
+        mass = pd.DataFrame(topics[config.SUB_MASS])
+        plt.plot(mass['time'] - mass['time'].min(), mass['mass'] - mass['mass'].min())
+        if mass['mass'][mass.shape[0] - 1] - mass['mass'][0] > 0:
+            plt.savefig('tmp/plot_{0}.png'.format(file[:-5]))
+        plt.clf()

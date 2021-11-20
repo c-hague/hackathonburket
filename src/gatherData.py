@@ -1,43 +1,59 @@
 import time
 import random
 import json
+import numpy as np
 from service.systemController import SystemController
 from store.mongoStore import MongoStore
 
 def main():
-    start = time.time() - 10
     n = 10
-    minT = 5
-    maxT = 10
+    reFillTime = 35
     controller = SystemController.getInstance()
-    store = MongoStore.getInstance()
+    controller.closeValve()
     controller.resetVolume()
-    t = 30
     for i in range(n):
-        if not controller.getIsReady():
+        t = random.random() * 10
+        waitRefilling(controller)
+        while not controller.getIsReady():
             print('paused!')
             time.sleep(1)
+        controller.resetVolume()
         print('opening valve for', t, 'seconds')
         controller.openValve()
-        time.sleep(t)
+        for j in np.linspace(0, t, 10):
+            waitRefilling(controller)
+            time.sleep(t / 10)
         controller.closeValve()
         time.sleep(10)
-        controller.resetVolume()
-        end = time.time() 
-        writeFile(store, start, end, '30s_{0}'.format(i))
-    time.sleep(10)
 
-def writeFile(store, start, end, fname):
+
+def waitRefilling(controller: SystemController):
+    closed = False
+    i = 0
+    if controller.getIsFull():
+        controller.closeValve()
+        closed = True
+        print('refilling!')
+        while not controller.getIsTankMin():
+            time.sleep(1)
+            i += 1
+        controller.closeValve()
+        print('refilling took', i, 'seconds')
+    if closed:
+        controller.openValve()
+
+def writeFile(store, start, end, fname, dataLimit=2048):
+    dataLimit = 2048
     with open(fname, 'w') as f:
-        mass = store.getMass(start, end, 0, 256)
-        volume = store.getVolume(start, end, 0, 256)
-        dataTime = store.getTime(start, end, 0 ,256)
-        floFlow = store.getFloFlow(start, end, 0, 256)
-        velocity = store.getVelocity(start, end, 0, 256)
-        weight = store.getWeight(start, end, 0, 256)
-        flow = store.getFlow(start, end, 0, 256)
-        total = store.getTotal(start, end, 0, 256)
-        state = store.getState(start, end, 0, 256)
+        mass = store.getMass(start, end, 0, dataLimit)
+        volume = store.getVolume(start, end, 0, dataLimit)
+        dataTime = store.getTime(start, end, 0 ,dataLimit)
+        floFlow = store.getFloFlow(start, end, 0, dataLimit)
+        velocity = store.getVelocity(start, end, 0, dataLimit)
+        weight = store.getWeight(start, end, 0, dataLimit)
+        flow = store.getFlow(start, end, 0, dataLimit)
+        total = store.getTotal(start, end, 0, dataLimit)
+        state = store.getState(start, end, 0, dataLimit)
         l = mass + volume + dataTime + floFlow + velocity + weight + flow + total + state
         json.dump(l, f)
     
