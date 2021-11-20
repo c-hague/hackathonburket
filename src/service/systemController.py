@@ -1,8 +1,10 @@
+from random import random
 import config
 from service.mqttConnection import MQTTConnection
 from store.mongoStore import MongoStore
 import time
 import numpy as np
+from service.SysCalibration import Calibrate_System
 
 class ValveOpenException(Exception):
     pass
@@ -27,6 +29,7 @@ class SystemController(object):
         self.lastValveState = False
         self.client.loop_start()
         self.store = MongoStore.getInstance()
+        self.calibrate = Calibrate_System()
     
     def getIsReady(self):
         lastState = self.store.getLastNonMaxFillState()
@@ -45,11 +48,11 @@ class SystemController(object):
     
     def getIsTankMin(self):
         lastTank = self.store.getLastFromCollection(config.MASS_COL, limit=10)
-        if len(lastTank) <= 10:
+        if len(lastTank) <= 9:
             return None
-        masses = np.array(map(lambda x: x['mass']), lastTank)
+        masses = np.array(list(map(lambda x: x['mass'], lastTank)))
         slopes: np.ndarray = masses[:-1] - masses[1:]
-        return lastTank[0]['mass'] < 20 or slopes.mean() >= 0
+        return lastTank[0]['mass'] < 20 or (slopes.mean() >= 0).all()
 
     def openValve(self):
         result = self.client.publish(config.PUB_VALVE, 'Open')
@@ -82,3 +85,51 @@ class SystemController(object):
             'command': '1',
             'time': time.time()
         })
+    
+    def calibrateSystem(self):
+        times = []
+        for i in range(10):
+            self.closeValve()
+            self.resetVolume()
+            time.sleep(1)
+            self._waitRefilling()
+            waitTime = 30
+            start = time.time()
+            self.openValve()
+            time.sleep(waitTime)
+            self.closeValve()
+            self._waitRefilling()
+            end = time.time() + 2
+            time.sleep(2)
+            times.append([start, end])
+        self.calibrate.compile_data(times)
+
+
+    def _waitRefilling(self):
+        closed = False
+        i = 0
+        if self.getIsFull():
+            self.closeValve()
+            closed = True
+            while not self.getIsTankMin():
+                time.sleep(1)
+                i += 1
+            self.closeValve()
+        if closed:
+            self.openValve()
+        return closed
+    
+    def dose(self, amount):
+        t = self.calibrate.predict(amount)
+        m0 = self.store.getLastFromCollection(config.MASS_COL)
+        self.resetVolume()
+        time.sleep(1)
+        self._waitRefilling()
+        self.openValve()
+        time.sleep(t)
+        self.closeValve()
+        self._waitRefilling()
+        time.sleep(1)
+        m1 = self.store.getLastFromCollection(config.MASS_COL)
+        return m1 - m0
+

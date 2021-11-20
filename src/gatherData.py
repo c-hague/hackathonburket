@@ -21,7 +21,7 @@ def main():
     try:
         for i in range(n):
             e, _ = trial(controller, store, b, target)
-            m = e * math.exp(i) * learningRate
+            m = e * math.exp(-i) * learningRate
             b += m if abs(m) < b / 2 else b / 2 * m / abs(m)
             print(b)
             errors.append(e)

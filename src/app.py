@@ -1,4 +1,4 @@
-from flask import request, jsonify, Flask
+from flask import request, jsonify, Flask, abort
 from service.systemController import SystemController
 from store.mongoStore import MongoStore
 
@@ -110,6 +110,21 @@ def postCloseValve():
 def postResetVolume():
     controller = SystemController.getInstance()
     controller.resetVolume()
+    return '', 201
+
+@app.route('/v1/dose', methods=['POST'])
+def postDose():
+    controller = SystemController.getInstance()
+    try:
+        amount = float(request.args.get('amount', 0))
+    except ValueError:
+        abort(400)
+    return controller.dose(amount), 201
+
+@app.route('/v1/calibrate', methods=['POST'])
+def postCalibrate():
+    controller = SystemController.getInstance()
+    controller.calibrateSystem()
     return '', 201
 
 if __name__ == '__main__':

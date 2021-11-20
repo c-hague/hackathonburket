@@ -3,12 +3,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from datetime import datetime,date
+from service.SysCalibration import Calibrate_System
 import smtplib
+import requests
+import time
+import random
 
-from sendemail import sendemail
 
-
-
+sysCalibration = Calibrate_System()
 #c
 # Functions for saving and loading scheduler data
 def read_save(f):
@@ -203,13 +205,13 @@ if (ld_bttn != True):
         for i in range(int(n)):
 
             if i == n-1 and i != 0:
-                x = col1.number_input('% Time',value=100,min_value=100,max_value=100);
+                x = col1.number_input('% Time',value=100,min_value=100,max_value=100)
                 y = col2.number_input('Volume ml',min_value=fill_volume[i-1])
             elif (i == 0):
-                x = col1.number_input('% Time' + str(0),min_value=0,max_value=0);
+                x = col1.number_input('% Time' + str(0),min_value=0,max_value=0)
                 y = col2.number_input('Volume ml' + str(0),min_value=0,max_value=0)              
             else:
-                x = col1.number_input('% Time' + str(i),min_value=time_percentage[i-1]);
+                x = col1.number_input('% Time' + str(i),min_value=time_percentage[i-1])
                 y = col2.number_input('Volume ml' + str(i),min_value=fill_volume[i-1])
 
             time_percentage.append(x)
@@ -265,15 +267,15 @@ if (ct_bttn != True):
 
                 if (i > 0):
 
-                    x = col1.number_input('% Time' + str(i),value=x_in[i]);
+                    x = col1.number_input('% Time' + str(i),value=x_in[i])
                     y = col2.number_input('Volume ml' + str(i),value=y_in[i])
 
                 else:
-                    x = col1.number_input('% Time' + str(i),value=x_in[i]);
+                    x = col1.number_input('% Time' + str(i),value=x_in[i])
                     y = col2.number_input('Volume ml' + str(i),value=y_in[i])
                 time_percentage.append(x)
                 fill_volume.append(y)
-
+#checks if the data is valid
             [job_data,error_save, error_savetype] = checkdatasave(time_percentage,fill_volume,total_time,max_flow)
             if error_save == False:
                 st.sidebar.write('No Errors in Profile')
@@ -300,5 +302,13 @@ if email_bttn:
     if send_bttn:
         sendemailstart(email_recp)
 
+calibrate_button = st.button('Auto Calibrate')
+if calibrate_button:
+    requests.post('http://localhost:5000/v1/calibrate')
 
-st.button('Self-Calibrate')
+run_button = st.button('Run Job')
+if run_button:           
+    for volume in fill_volume:
+        response = requests.post('http://localhost:5000/v1/dose?amount={0}'.format(volume))
+        if not response.ok:
+            st.sidebar.write('Error Communicating')
