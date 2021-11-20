@@ -19,8 +19,9 @@ def main():
             except ValueError:
                 pass
         elif msg.topic == config.SUB_STATE:
+            state = msg.payload.decode()
             store.addState({
-                'state': msg.payload.decode(),
+                'state': state,
                 'time': time.time(),
                 'topic': config.SUB_STATE
             })
@@ -87,7 +88,19 @@ def main():
                 })
             except ValueError:
                 pass
-    client.subscribe('#')
+        elif msg.topic == config.SUB_FLO_TIME:
+            pass
+        else:
+            print('message from topic', msg.topic)
+    client.subscribe(config.SUB_STATE)
+    client.subscribe(config.SUB_MASS)
+    client.subscribe(config.SUB_TIME)
+    client.subscribe(config.SUB_VOLUME)
+    client.subscribe(config.SUB_FLO_FLOW)
+    client.subscribe(config.SUB_VELOCITY)
+    client.subscribe(config.SUB_WEIGHT)
+    client.subscribe(config.SUB_FLOW)
+    client.subscribe(config.SUB_TOTAL)
     client.on_message = onMessgae
     client.loop_forever()
 

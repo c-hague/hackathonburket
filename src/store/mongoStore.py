@@ -28,6 +28,7 @@ class MongoStore(DataStore):
     
     def addState(self, state):
         self.db[config.STATE_COL].insert_one(state)
+        
     
     def addVolume(self, volume):
         self.db[config.VOLUME_COL].insert_one(volume)
@@ -53,17 +54,22 @@ class MongoStore(DataStore):
     def _getItem(self, startTime, endTime, skip, limit, collection):
         query = {}
         if startTime:
-            query['time'] = {'$gte', startTime}
+            query['time'] = {'$gte': startTime}
         if endTime:
             if not query['time']:
                 query['time'] = {}
-            query['time'].update({'$lte', endTime})
+            query['time'].update({'$lte': endTime})
         def f(x):
             x['_id'] = str(x['_id'])
             return x
         return list(map(f, self.db[collection].find(query).limit(limit).skip(skip)))
 
-    
+    def getLastState(self):
+        def f(x):
+            x['_id'] = str(x['_id'])
+            return x
+        return list(map(f, self.db[config.STATE_COL].find().limit(1).sort('time', -1)))
+
     def getMass(self, startTime, endTime, skip, limit):
         return self._getItem(startTime, endTime, skip, limit, config.MASS_COL)
 

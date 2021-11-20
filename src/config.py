@@ -1,11 +1,12 @@
 BROKER = '8.tcp.ngrok.io'
 PORT = 11605
-SUB_STATE = 'System/State'
+SUB_STATE = 'System/state'
 SUB_VOLUME = 'Measure/Volume'
 SUB_MASS = 'Measure/Mass'
 SUB_TIME = 'Measure/Time'
 SUB_FLO_FLOW = 'FLOWave/Flow'
 SUB_VELOCITY = 'FLOWave/Velocity'
+SUB_FLO_TIME = 'FLOWave/Time'
 SUB_WEIGHT = 'Scale/MT/weight_g'
 SUB_FLOW = 'Measure/Flow'
 SUB_TOTAL = 'FLOWave/Totalizer1'

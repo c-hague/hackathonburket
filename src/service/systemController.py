@@ -1,5 +1,6 @@
 import config
 from service.mqttConnection import MQTTConnection
+from store.mongoStore import MongoStore
 
 class ValveOpenException(Exception):
     pass
@@ -23,6 +24,13 @@ class SystemController(object):
         self.client = MQTTConnection.getInstance()
         self.lastValveState = False
         self.client.loop_start()
+        self.store = MongoStore.getInstance()
+    
+    def getIsReady(self):
+        lastState = self.store.getLastState()
+        if len(lastState) <= 0:
+            return False
+        return lastState[0]['state'] == 'Ready'            
 
     def openValve(self):
         if not self.lastValveState:

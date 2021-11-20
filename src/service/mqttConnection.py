@@ -1,5 +1,6 @@
 from paho.mqtt import client as mqtt_client
 import config
+import uuid
 
 class MQTTConnection(object):
     __instance: mqtt_client = None
@@ -13,7 +14,7 @@ class MQTTConnection(object):
             else:
                 print("Failed to connect, return code %d\n", rc)
 
-        client = mqtt_client.Client(config.CLIENT_ID)
+        client = mqtt_client.Client(config.CLIENT_ID + str(uuid.uuid1()))
         client.on_connect = on_connect
         client.connect(config.BROKER, config.PORT)
         MQTTConnection.__instance = client

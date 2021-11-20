@@ -29,6 +29,9 @@ class DataStore(object):
     def addTotal(Self, total):
         pass
 
+    def getLastState(self):
+        return ''
+
     def getMass(self, startTime, endTime, skip, limit):
         return []
     
