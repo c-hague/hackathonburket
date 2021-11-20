@@ -303,12 +303,12 @@ calibrate_button = st.sidebar.button('Auto Calibrate')
 if calibrate_button:
     try:
         if email_bttn:
-            sendemail(email_recp,"calibration started","The calibration started at " + str(date.today()) )
+            sendemail(email_recp,"calibration started","The calibration started at " + str(date.now()) )
         response = requests.post('http://localhost:5000/v1/calibrate')
         constants = response.json()
         print('a', constants['a'], 'b', constants['b'])
         if email_bttn:
-            sendemail(email_recp,"calibration Ended","The calibration ended at " + str(date.today()) )
+            sendemail(email_recp,"calibration Ended","The calibration ended at " + str(date.now()) )
     except:
         st.sidebar('Error Communicating')
 
@@ -323,13 +323,13 @@ if bool(constants) == True:
             for volume in fill_volume:
                 try:
                     if email_bttn:
-                        sendemail(email_recp,"Job Started","The job started at " + str(date.today()) )
+                        sendemail(email_recp,"Job Started","The job started at " + str(date.now()) )
                     response = requests.post('http://localhost:5000/v1/dose?amount={0}'.format(volume))
                     if not response.ok:
                         st.sidebar.write('Error Communicating')
                     actual = response.json()
                     print(actual['amount'])
                     if email_bttn:
-                        sendemail(email_recp,"Job Ended","The job ended at " + str(date.today()) )
+                        sendemail(email_recp,"Job Ended","The job ended at " + str(date.now()) )
                 except:
                     st.sidebar.write('Error Communicating')
