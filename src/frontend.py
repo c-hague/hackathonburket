@@ -313,31 +313,34 @@ if calibrate_button:
         st.sidebar('Error Communicating')
 
 #check to see if the calibration has been loaded
-if bool(constants) == True:
-    run_button = st.button('Run Job')
-    #check to see if a job has been loaded
-    if ct_bttn == True or ld_bttn == True:
-        run_button = st.sidebar.button('Run Job')
-        
-        if run_button:    
-            # reset current volume 
-            volume_current = 0       
-            for volume in fill_volume:
-                try:
-                    if email_bttn:
-                        sendemail(email_recp,"Job Started","The job started at " + str(date.now()) )
-                    actual = response.json()
-                    print(actual['amount'])
-                    # update current volume
-                    volume_current += actual
-                    # calculate desired setpoint (delta m or delta v)
-                    volume_desired = volume - volume_current
-                    # exectue fill to next setpoint
-                    response = requests.post('http://localhost:5000/v1/dose?amount={0}'.format(volume_desired))
-                    if not response.ok:
-                        st.sidebar.write('Error Communicating')
-                    
-                    if email_bttn:
-                        sendemail(email_recp,"Job Ended","The job ended at " + str(date.now()) )
-                except:
+#if bool(constants) == True:
+#run_button = st.button('Run Job')
+#check to see if a job has been loaded
+if ct_bttn == True or ld_bttn == True:
+    run_button = st.sidebar.button('Run Job')
+    
+    if run_button:    
+        # reset current volume 
+        volume_current = 0       
+        for volume in fill_volume:
+            try:
+                if email_bttn:
+                    sendemail(email_recp,"Job Started","The job started at " + str(date.now()) )
+                
+                actual = response.json()
+                print(actual['amount'])
+                # update current volume
+                volume_current += actual
+                # calculate desired setpoint (delta m or delta v)
+                volume_desired = volume - volume_current
+                # exectue fill to next setpoint
+                response = requests.post('http://localhost:5000/v1/dose?amount={0}'.format(volume_desired))
+                
+                if not response.ok:
                     st.sidebar.write('Error Communicating')
+                
+                
+                if email_bttn:
+                    sendemail(email_recp,"Job Ended","The job ended at " + str(date.now()) )
+            except:
+                st.sidebar.write('Error Communicating')
