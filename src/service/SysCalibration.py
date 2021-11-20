@@ -12,8 +12,8 @@ class Calibrate_System:
         self.max_per_diff = 100
         self.start_time = 10
         self.clip_mass = 3500
-        self.a_cal = 190
-        self.b_cal = 0
+        self.a_cal = 189
+        self.b_cal = -26
         self.store = MongoStore.getInstance()
 
     def compile_data(self, times):

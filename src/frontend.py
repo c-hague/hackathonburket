@@ -338,7 +338,6 @@ if calibrate_button:
     except:
         st.sidebar('Error Communicating')
 
-run_button = st.button('Run Job')
 if ct_bttn == True or ld_bttn == True:
     run_button = st.sidebar.button('Run Job')
     if run_button:           
