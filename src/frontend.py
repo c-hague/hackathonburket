@@ -319,7 +319,8 @@ if bool(constants) == True:
     if ct_bttn == True or ld_bttn == True:
         run_button = st.sidebar.button('Run Job')
         
-        if run_button:           
+        if run_button:    
+            volume_current = 0       
             for volume in fill_volume:
                 try:
                     if email_bttn:
@@ -329,6 +330,11 @@ if bool(constants) == True:
                         st.sidebar.write('Error Communicating')
                     actual = response.json()
                     print(actual['amount'])
+                    volume_current += actual
+                    volume_desired = volume - volume_current
+                    # exectue fill to next setpoint
+                    sysCalibration.predict(volume_desired)
+                    
                     if email_bttn:
                         sendemail(email_recp,"Job Ended","The job ended at " + str(date.now()) )
                 except:
