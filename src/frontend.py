@@ -151,7 +151,7 @@ st.header('Burket Hackathon: Team UNCC')
 st.sidebar.header('Flow Scheduler')
 
 #init some variables
-max_flow = 10
+max_flow = 180
 total_time = 0
 
 #init the flow constants
@@ -165,38 +165,46 @@ ld_bttn = False
 
 
 
+
 #create job
 if (ld_bttn != True):
     #if the load button hasn't been pressed then show the create button
     ct_bttn = st.sidebar.checkbox('Create Job')
 
+    fill_volume = []
+    time_percentage = []
+
     if ct_bttn:
         #init the plot
         fig, ax = plt.subplots()
-        total_time = st.sidebar.number_input('Target Time (seconds)')
+        #total_time = st.sidebar.number_input('Target Time (seconds)')
+        total_time = 100
 
         #start the dual columns for data entry
         col1, col2 = st.sidebar.columns(2)
 
-        #make two arrays the store the data
-        time_percentage = []
-        fill_volume = []
+        # #make two arrays the store the data
+        # time_percentage = []
+        # fill_volume = []
 
         #see how many points the user wants to use
         n = st.sidebar.number_input('Job Sequences',2)
 
         #iterate through making the input boxes
         for i in range(int(n)):
+            x = col1.number_input('Step',value=i,min_value=i,max_value=i)
+            y = col2.number_input('Volume ml',i)
 
-            if i == n-1 and i != 0:
-                x = col1.number_input('% Time',value=100,min_value=100,max_value=100)
-                y = col2.number_input('Volume ml',min_value=fill_volume[i-1])
-            elif (i == 0):
-                x = col1.number_input('% Time' + str(0),min_value=0,max_value=0)
-                y = col2.number_input('Volume ml' + str(0),min_value=0,max_value=0)              
-            else:
-                x = col1.number_input('% Time' + str(i),min_value=time_percentage[i-1])
-                y = col2.number_input('Volume ml' + str(i),min_value=fill_volume[i-1])
+
+            # if i == n-1 and i != 0:
+            #     x = col1.number_input('Step',value=100,min_value=100,max_value=100)
+            #     y = col2.number_input('Volume ml',min_value=fill_volume[i-1])
+            # elif (i == 0):
+            #     x = col1.number_input('Step' + str(0),min_value=0,max_value=0)
+            #     y = col2.number_input('Volume ml' + str(0),min_value=0,max_value=0)              
+            # else:
+            #     x = col1.number_input('Step' + str(i),min_value=time_percentage[i-1])
+            #     y = col2.number_input('Volume ml' + str(i),min_value=fill_volume[i-1])
 
             #add the values to the storage array
             time_percentage.append(x)
@@ -207,9 +215,11 @@ if (ld_bttn != True):
             #plot some stuff
             ax.plot(time_percentage,fill_volume)
             ax.scatter(time_percentage, fill_volume)
-            secax = ax.secondary_xaxis('top', functions=(time_seconds, time_percent))
-            secax.set_xlabel('Processing Time (seconds)')
-            ax.set_xlabel('% of Target Time')
+            #secax = ax.secondary_xaxis('top', functions=(time_seconds, time_percent))
+            #secax.set_xlabel('Processing Time (seconds)')
+            #ax.set_xlabel('% of Target Time')
+            ax.set_xlabel('Steps')
+
             ax.set_ylabel('Volume ml')
             st.pyplot(fig)
 
@@ -236,8 +246,8 @@ if (ct_bttn != True):
     if ld_bttn:
         fig, ax = plt.subplots()
 
-        time_percentage = []
-        fill_volume = []
+        # time_percentage = []
+        # fill_volume = []
 
         fileloadname = file_selector()
         if st.sidebar.button('Load file function here'):
@@ -249,7 +259,9 @@ if (ct_bttn != True):
             [x_in,y_in] = cleanimport(imp) #basic clean
 
             #add the columns and time
-            total_time = st.sidebar.number_input('Target Time (seconds)',value=float(tot_time))
+            #total_time = st.sidebar.number_input('Target Time (seconds)',value=float(tot_time))
+            total_time = 100
+
             col1, col2 = st.sidebar.columns(2)
 
             n = len(x_in)
@@ -258,17 +270,17 @@ if (ct_bttn != True):
 
                 if (i > 0):
 
-                    x = col1.number_input('% Time' + str(i),value=x_in[i])
+                    x = col1.number_input('Step' + str(i),value=x_in[i])
                     y = col2.number_input('Volume ml' + str(i),value=y_in[i])
 
                 else:
-                    x = col1.number_input('% Time' + str(i),value=x_in[i])
+                    x = col1.number_input('Step' + str(i),value=x_in[i])
                     y = col2.number_input('Volume ml' + str(i),value=y_in[i])
 
                 #load the data into arrays for use
                 time_percentage.append(x)
+                
                 fill_volume.append(y)
-
             #feed the data into a checking function for simple profile errors
             [job_data,error_save, error_savetype] = checkdatasave(time_percentage,fill_volume,total_time,max_flow)
             #job_data = dict with organized profile data
@@ -283,9 +295,10 @@ if (ct_bttn != True):
        # if st.sidebar.button('Preview Job'):
             ax.plot(time_percentage,fill_volume)
             ax.scatter(time_percentage, fill_volume)
-            secax = ax.secondary_xaxis('top', functions=(time_seconds, time_percent))
-            secax.set_xlabel('Processing Time (seconds)')
-            ax.set_xlabel('% of Target Time')
+            #secax = ax.secondary_xaxis('top', functions=(time_seconds, time_percent))
+            #ecax.set_xlabel('Processing Time (seconds)')
+            #ax.set_xlabel('% of Target Time')
+            ax.set_xlabel('Steps')
             ax.set_ylabel('Volume ml')
             st.pyplot(fig)
 
@@ -318,29 +331,60 @@ if calibrate_button:
 #check to see if a job has been loaded
 if ct_bttn == True or ld_bttn == True:
     run_button = st.sidebar.button('Run Job')
-    
+
     if run_button:    
         # reset current volume 
-        volume_current = 0       
-        for volume in fill_volume:
-            try:
+        response = None   
+        current_volumes = [0]
+        volume_desired = 0
+        total = 0
+
+        for req_vol in fill_volume[1:]:
+            try: 
                 if email_bttn:
-                    sendemail(email_recp,"Job Started","The job started at " + str(date.now()) )
-                
-                actual = response.json()
-                print(actual['amount'])
-                # update current volume
-                volume_current += actual
-                # calculate desired setpoint (delta m or delta v)
-                volume_desired = volume - volume_current
-                # exectue fill to next setpoint
+                    sendemail(email_recp,"Job Started","The job started at " + str(datetime.now()) )
+        
+                volume_desired = req_vol-total
+
                 response = requests.post('http://localhost:5000/v1/dose?amount={0}'.format(volume_desired))
-                
+
+                if response:
+                    actual = response.json()['amount']
+                else:
+                    actual = 0
+
+                current_volumes.append(actual)
+                total = sum(current_volumes)
                 if not response.ok:
                     st.sidebar.write('Error Communicating')
-                
-                
                 if email_bttn:
-                    sendemail(email_recp,"Job Ended","The job ended at " + str(date.now()) )
-            except:
-                st.sidebar.write('Error Communicating')
+                    sendemail(email_recp,"Job Ended","The job ended at " + str(datetime.now()) )
+
+            
+            except Exception as e:
+                st.sidebar.write('Error Communicating', e)
+
+            if response:
+                actual = response.json()['amount']
+            else:
+                actual = 0
+
+
+        for vv in range(0,len(current_volumes)-1):
+            current_volumes[vv+1] = current_volumes[vv] + current_volumes[vv+1]
+
+        
+        print(current_volumes)
+
+
+        fig,ax = plt.subplots()
+        current_volumes = current_volumes + [0] * (len(time_percentage) - len(current_volumes))
+        ax.scatter(time_percentage, current_volumes)
+        ax.plot(time_percentage,fill_volume)
+        ax.scatter(time_percentage, fill_volume)
+
+        secax = ax.secondary_xaxis('top', functions=(time_seconds, time_percent))
+        secax.set_xlabel('Processing Time (seconds)')
+        ax.set_xlabel('% of Target Time')
+        ax.set_ylabel('Volume ml')
+        st.pyplot(fig)

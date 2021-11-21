@@ -122,16 +122,18 @@ class SystemController(object):
         return closed
     
     def dose(self, amount):
+        if amount < 0:
+            return 0
         t = self.calibrate.predict(amount)
-        m0 = self.store.getLastFromCollection(config.MASS_COL)
         self.resetVolume()
         time.sleep(1)
         self._waitRefilling()
+        m0 = self.store.getLastFromCollection(config.MASS_COL)
         self.openValve()
         time.sleep(t)
         self.closeValve()
         self._waitRefilling()
-        time.sleep(1)
+        time.sleep(8)
         m1 = self.store.getLastFromCollection(config.MASS_COL)
         return m1[0]['mass'] - m0[0]['mass']
 

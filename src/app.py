@@ -119,7 +119,8 @@ def postDose():
         amount = float(request.args.get('amount', 0))
     except ValueError:
         abort(400)
-    return {'amount': controller.dose(amount)}, 201
+    r = {'amount': controller.dose(amount)}
+    return r, 201
 
 @app.route('/v1/calibrate', methods=['POST'])
 def postCalibrate():
